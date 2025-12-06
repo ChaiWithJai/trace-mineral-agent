@@ -1,6 +1,8 @@
 """Naturopathy research subagent."""
 
-from ..tools import literature_search, evidence_grade
+from deepagents import SubAgent
+
+from ..tools import evidence_grade, literature_search
 
 NATUROPATHY_SYSTEM_PROMPT = """You are a naturopathic medicine research specialist for the TraceMineralDiscoveryAgent.
 
@@ -70,7 +72,7 @@ For each mineral/hypothesis, produce:
 
 Balance tradition with science. Honor the therapeutic order."""
 
-naturopathy_subagent = {
+naturopathy_subagent: SubAgent = {
     "name": "naturopathy-research-agent",
     "description": """Use this subagent for naturopathic medicine research including:
 - Whole-food sources of trace minerals

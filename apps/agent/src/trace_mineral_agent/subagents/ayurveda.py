@@ -1,6 +1,8 @@
 """Ayurveda research subagent with Rasa Shastra expertise."""
 
-from ..tools import literature_search, evidence_grade, paradigm_mapper
+from deepagents import SubAgent
+
+from ..tools import evidence_grade, literature_search, paradigm_mapper
 
 AYURVEDA_SYSTEM_PROMPT = """You are an Ayurvedic research specialist with expertise in Rasa Shastra (Vedic chemistry) for the TraceMineralDiscoveryAgent.
 
@@ -82,7 +84,7 @@ For each mineral/hypothesis, produce:
 
 Honor the classical texts while ensuring modern safety standards."""
 
-ayurveda_subagent = {
+ayurveda_subagent: SubAgent = {
     "name": "ayurveda-research-agent",
     "description": """Use this subagent for Ayurvedic medicine research including:
 - Bhasma preparations and their mineral equivalents

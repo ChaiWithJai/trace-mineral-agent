@@ -1,6 +1,5 @@
 """Tests for the subagent configurations."""
 
-import pytest
 
 from trace_mineral_agent.subagents import (
     allopathy_subagent,

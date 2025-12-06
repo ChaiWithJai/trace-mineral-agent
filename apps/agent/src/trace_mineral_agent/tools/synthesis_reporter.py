@@ -169,10 +169,10 @@ epistemological differences between traditions.
 
 | Paradigm | Evidence Grade | Mechanism Support | Clinical Evidence |
 |----------|---------------|-------------------|-------------------|
-| Allopathy | {'Present' if allopathy_findings else 'Absent'} | See above | See above |
-| Naturopathy | {'Present' if naturopathy_findings else 'Absent'} | See above | See above |
-| Ayurveda | {'Present' if ayurveda_findings else 'Absent'} | See above | See above |
-| TCM | {'Present' if tcm_findings else 'Absent'} | See above | See above |
+| Allopathy | {"Present" if allopathy_findings else "Absent"} | See above | See above |
+| Naturopathy | {"Present" if naturopathy_findings else "Absent"} | See above | See above |
+| Ayurveda | {"Present" if ayurveda_findings else "Absent"} | See above | See above |
+| TCM | {"Present" if tcm_findings else "Absent"} | See above | See above |
 
 ---
 
@@ -233,8 +233,8 @@ def _generate_product_trainer_report(
 
 | Tradition | Key Finding | Confidence |
 |-----------|-------------|------------|
-| Western Research | {allopathy_findings[:100] + '...' if allopathy_findings else 'Limited data'} | {'Moderate' if allopathy_findings else 'Low'} |
-| Traditional Use | Multiple paradigm support | {'High' if consensus_score > 0.5 else 'Moderate'} |
+| Western Research | {allopathy_findings[:100] + "..." if allopathy_findings else "Limited data"} | {"Moderate" if allopathy_findings else "Low"} |
+| Traditional Use | Multiple paradigm support | {"High" if consensus_score > 0.5 else "Moderate"} |
 
 ---
 

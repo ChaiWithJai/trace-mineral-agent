@@ -1,11 +1,13 @@
 """Literature search tool for multi-paradigm medical research."""
 
-from typing import Literal
-import xml.etree.ElementTree as ET
 import os
+from typing import Literal
 
 import httpx
+from defusedxml import ElementTree
 from langchain_core.tools import tool
+
+from ..cache import cached_search
 
 
 @tool
@@ -25,17 +27,19 @@ def literature_search(
     Returns:
         Markdown-formatted search results with citations
     """
-    # Route to appropriate database based on paradigm
-    if paradigm == "allopathy":
-        results = _search_pubmed(query, max_results)
-    elif paradigm == "naturopathy":
-        results = _search_integrative_medicine(query, max_results)
-    elif paradigm == "ayurveda":
-        results = _search_ayurveda_databases(query, max_results)
-    elif paradigm == "tcm":
-        results = _search_tcm_databases(query, max_results)
-    else:
+    # Select search function based on paradigm
+    search_funcs = {
+        "allopathy": _search_pubmed,
+        "naturopathy": _search_integrative_medicine,
+        "ayurveda": _search_ayurveda_databases,
+        "tcm": _search_tcm_databases,
+    }
+
+    if paradigm not in search_funcs:
         return f"Unknown paradigm: {paradigm}"
+
+    # Use cached search
+    results = cached_search(search_funcs[paradigm], query, paradigm, max_results)
 
     # Format results as markdown
     if not results:
@@ -198,7 +202,7 @@ def _parse_pubmed_xml(xml_text: str) -> list:
     """Parse PubMed XML response into structured data."""
     papers = []
     try:
-        root = ET.fromstring(xml_text)
+        root = ElementTree.fromstring(xml_text)
         for article in root.findall(".//PubmedArticle"):
             medline = article.find(".//MedlineCitation")
             if medline is None:
@@ -238,7 +242,7 @@ def _parse_pubmed_xml(xml_text: str) -> list:
                     "doi": doi,
                 }
             )
-    except ET.ParseError:
+    except ElementTree.ParseError:
         pass
 
     return papers

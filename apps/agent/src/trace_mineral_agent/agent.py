@@ -4,6 +4,7 @@ import os
 
 from deepagents import create_deep_agent
 
+from .observability import configure_langsmith, is_tracing_enabled, trace_research_query
 from .prompts import QUICK_QUESTIONS, TRACE_MINERAL_SYSTEM_PROMPT, print_welcome
 from .subagents import (
     allopathy_subagent,
@@ -13,11 +14,16 @@ from .subagents import (
     tcm_subagent,
 )
 from .tools import (
+    check_drug_interactions,
     evidence_grade,
+    list_mineral_interactions,
     literature_search,
     paradigm_mapper,
     synthesis_reporter,
 )
+
+# Configure LangSmith if API key is present
+configure_langsmith()
 
 
 def create_trace_mineral_agent(
@@ -43,6 +49,8 @@ def create_trace_mineral_agent(
             evidence_grade,
             paradigm_mapper,
             synthesis_reporter,
+            check_drug_interactions,
+            list_mineral_interactions,
         ],
         subagents=[
             allopathy_subagent,
@@ -64,6 +72,10 @@ def main() -> None:
     """Run the agent in interactive mode."""
     print_welcome()
 
+    # Show tracing status
+    if is_tracing_enabled():
+        print("  [LangSmith tracing enabled]\n")
+
     while True:
         try:
             user_input = input("\n You: ").strip()
@@ -80,8 +92,9 @@ def main() -> None:
                 user_input = QUICK_QUESTIONS[user_input]
                 print(f" Quick pick: {user_input}\n")
 
-            # Process the question
-            result = agent.invoke({"messages": [{"role": "user", "content": user_input}]})
+            # Process the question with optional tracing
+            with trace_research_query(query=user_input):
+                result = agent.invoke({"messages": [{"role": "user", "content": user_input}]})
 
             print("\n TraceMineralDiscoveryAgent:")
             print(result["messages"][-1].content)

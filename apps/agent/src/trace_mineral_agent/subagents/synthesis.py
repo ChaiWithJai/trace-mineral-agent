@@ -1,5 +1,7 @@
 """Synthesis subagent for cross-paradigm integration."""
 
+from deepagents import SubAgent
+
 from ..tools import paradigm_mapper, synthesis_reporter
 
 SYNTHESIS_SYSTEM_PROMPT = """You are the synthesis specialist for the TraceMineralDiscoveryAgent.
@@ -76,7 +78,7 @@ Look for:
 
 Maintain epistemic humility. Respect each paradigm's internal logic."""
 
-synthesis_subagent = {
+synthesis_subagent: SubAgent = {
     "name": "synthesis-agent",
     "description": """Use this subagent to synthesize multi-paradigm research findings including:
 - Cross-paradigm consensus scoring
