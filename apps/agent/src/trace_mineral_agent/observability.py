@@ -8,6 +8,9 @@ from typing import Any, Literal
 
 # Check if LangSmith is available
 LANGSMITH_AVAILABLE = False
+langsmith_traceable: Any = None
+get_current_run_tree: Any = None
+
 try:
     from langsmith import traceable as langsmith_traceable
     from langsmith.run_helpers import get_current_run_tree
