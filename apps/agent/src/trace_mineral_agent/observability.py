@@ -4,7 +4,7 @@ import os
 from collections.abc import Callable
 from contextlib import contextmanager
 from functools import wraps
-from typing import Any
+from typing import Any, Literal
 
 # Check if LangSmith is available
 LANGSMITH_AVAILABLE = False
@@ -47,9 +47,12 @@ def configure_langsmith(
         os.environ["LANGCHAIN_TRACING_V2"] = "false"
 
 
+RunType = Literal["tool", "chain", "llm", "retriever", "embedding", "prompt", "parser"]
+
+
 def traceable(
     name: str | None = None,
-    run_type: str = "chain",
+    run_type: RunType = "chain",
     metadata: dict | None = None,
 ) -> Callable:
     """

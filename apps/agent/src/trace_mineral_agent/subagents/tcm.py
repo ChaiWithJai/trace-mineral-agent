@@ -1,5 +1,7 @@
 """Traditional Chinese Medicine (TCM) research subagent."""
 
+from deepagents import SubAgent
+
 from ..tools import evidence_grade, literature_search, paradigm_mapper
 
 TCM_SYSTEM_PROMPT = """You are a Traditional Chinese Medicine research specialist for the TraceMineralDiscoveryAgent.
@@ -78,7 +80,7 @@ For each mineral/hypothesis, produce:
 
 Honor the systemic, energetic perspective of TCM."""
 
-tcm_subagent = {
+tcm_subagent: SubAgent = {
     "name": "tcm-research-agent",
     "description": """Use this subagent for Traditional Chinese Medicine research including:
 - Five Element correspondences for minerals

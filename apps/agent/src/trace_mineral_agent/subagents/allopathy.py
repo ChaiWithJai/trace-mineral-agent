@@ -1,5 +1,7 @@
 """Allopathy (Western Medicine) research subagent."""
 
+from deepagents import SubAgent
+
 from ..tools import evidence_grade, literature_search
 
 ALLOPATHY_SYSTEM_PROMPT = """You are an evidence-based medicine research specialist for the TraceMineralDiscoveryAgent.
@@ -66,7 +68,7 @@ For each mineral/hypothesis, produce:
 
 Be precise. Be skeptical. Be scientific."""
 
-allopathy_subagent = {
+allopathy_subagent: SubAgent = {
     "name": "allopathy-research-agent",
     "description": """Use this subagent for Western medical research including:
 - Clinical trial data on trace minerals
