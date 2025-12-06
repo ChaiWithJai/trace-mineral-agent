@@ -42,7 +42,8 @@ class TestConfigureLangsmith:
 
         configure_langsmith(enable_tracing=False)
 
-        assert os.getenv("LANGSMITH_TRACING_V2") == "false"
+        # Implementation uses LANGCHAIN_TRACING_V2 (not LANGSMITH_TRACING_V2)
+        assert os.getenv("LANGCHAIN_TRACING_V2") == "false"
 
 
 class TestIsTracingEnabled:
