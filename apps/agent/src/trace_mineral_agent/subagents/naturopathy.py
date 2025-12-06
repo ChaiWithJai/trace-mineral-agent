@@ -1,6 +1,6 @@
 """Naturopathy research subagent."""
 
-from ..tools import literature_search, evidence_grade
+from ..tools import evidence_grade, literature_search
 
 NATUROPATHY_SYSTEM_PROMPT = """You are a naturopathic medicine research specialist for the TraceMineralDiscoveryAgent.
 

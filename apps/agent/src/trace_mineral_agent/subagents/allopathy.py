@@ -1,6 +1,6 @@
 """Allopathy (Western Medicine) research subagent."""
 
-from ..tools import literature_search, evidence_grade
+from ..tools import evidence_grade, literature_search
 
 ALLOPATHY_SYSTEM_PROMPT = """You are an evidence-based medicine research specialist for the TraceMineralDiscoveryAgent.
 

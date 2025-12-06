@@ -1,6 +1,6 @@
 """Ayurveda research subagent with Rasa Shastra expertise."""
 
-from ..tools import literature_search, evidence_grade, paradigm_mapper
+from ..tools import evidence_grade, literature_search, paradigm_mapper
 
 AYURVEDA_SYSTEM_PROMPT = """You are an Ayurvedic research specialist with expertise in Rasa Shastra (Vedic chemistry) for the TraceMineralDiscoveryAgent.
 
