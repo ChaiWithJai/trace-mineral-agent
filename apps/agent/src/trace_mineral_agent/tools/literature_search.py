@@ -3,8 +3,8 @@
 import os
 from typing import Literal
 
-import defusedxml.ElementTree as ET
 import httpx
+from defusedxml import ElementTree
 from langchain_core.tools import tool
 
 from ..cache import cached_search
@@ -202,7 +202,7 @@ def _parse_pubmed_xml(xml_text: str) -> list:
     """Parse PubMed XML response into structured data."""
     papers = []
     try:
-        root = ET.fromstring(xml_text)
+        root = ElementTree.fromstring(xml_text)
         for article in root.findall(".//PubmedArticle"):
             medline = article.find(".//MedlineCitation")
             if medline is None:
@@ -242,7 +242,7 @@ def _parse_pubmed_xml(xml_text: str) -> list:
                     "doi": doi,
                 }
             )
-    except ET.ParseError:
+    except ElementTree.ParseError:
         pass
 
     return papers
