@@ -274,9 +274,7 @@ INTERACTIONS = {
 
 @tool
 def check_drug_interactions(
-    mineral: Literal[
-        "chromium", "zinc", "magnesium", "iron", "selenium", "copper", "iodine"
-    ],
+    mineral: Literal["chromium", "zinc", "magnesium", "iron", "selenium", "copper", "iodine"],
     medications: list[str],
 ) -> str:
     """
@@ -348,9 +346,7 @@ def check_drug_interactions(
 
 @tool
 def list_mineral_interactions(
-    mineral: Literal[
-        "chromium", "zinc", "magnesium", "iron", "selenium", "copper", "iodine"
-    ],
+    mineral: Literal["chromium", "zinc", "magnesium", "iron", "selenium", "copper", "iodine"],
 ) -> str:
     """
     List all known drug interactions for a mineral.

@@ -131,7 +131,7 @@ The concepts share functional equivalence in their respective frameworks.
 ### Reverse Mapped Concept
 
 The concept "{concept}" in {source_paradigm} appears to correspond to:
-- **{source_concept.replace('_', ' ').title()}** in {target_paradigm}
+- **{source_concept.replace("_", " ").title()}** in {target_paradigm}
 
 ### Note
 

@@ -1,9 +1,9 @@
 """Literature search tool for multi-paradigm medical research."""
 
 import os
-import xml.etree.ElementTree as ET
 from typing import Literal
 
+import defusedxml.ElementTree as ET
 import httpx
 from langchain_core.tools import tool
 

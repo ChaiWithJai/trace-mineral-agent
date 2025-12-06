@@ -140,7 +140,9 @@ def evidence_grade(
         f"Sample size ({sample_size}) indicates {'adequate' if sample_size > 100 else 'limited'} power"
     )
 
-    effect_desc = "large" if abs(effect_size) > 0.8 else "moderate" if abs(effect_size) > 0.5 else "small"
+    effect_desc = (
+        "large" if abs(effect_size) > 0.8 else "moderate" if abs(effect_size) > 0.5 else "small"
+    )
     rationale_parts.append(f"Effect size ({effect_size:.2f}) is {effect_desc}")
 
     if replication_count > 1:
@@ -162,7 +164,7 @@ def evidence_grade(
 | Risk of Bias | {risk_of_bias} |
 | Inconsistency | {inconsistency} |
 | Imprecision | {imprecision} |
-| Study Type | {study_type.replace('_', ' ').title()} |
+| Study Type | {study_type.replace("_", " ").title()} |
 
 ### Rationale
 
