@@ -2,7 +2,7 @@
   "python_version": "3.11",
   "dependencies": ["./apps/agent"],
   "graphs": {
-    "trace-mineral-discovery": "./apps/agent/src/trace_mineral_agent/agent.py:agent"
+    "trace-mineral-discovery": "trace_mineral_agent.agent:agent"
   },
   "env": "./apps/agent/.env"
 }
