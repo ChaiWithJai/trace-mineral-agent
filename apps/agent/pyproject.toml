@@ -43,6 +43,7 @@ dev = [
 
 [project.scripts]
 trace-mineral-agent = "trace_mineral_agent.agent:main"
+concierge-health-agent = "trace_mineral_agent.concierge.agent:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/trace_mineral_agent"]

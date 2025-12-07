@@ -2,7 +2,8 @@
   "python_version": "3.11",
   "dependencies": ["./apps/agent"],
   "graphs": {
-    "trace-mineral-discovery": "trace_mineral_agent.agent:agent"
+    "trace-mineral-discovery": "trace_mineral_agent.agent:agent",
+    "concierge-health": "trace_mineral_agent.concierge.agent:concierge_agent"
   },
   "env": "./apps/agent/.env"
 }
