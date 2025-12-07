@@ -43,6 +43,8 @@ dev = [
 
 [project.scripts]
 trace-mineral-agent = "trace_mineral_agent.agent:main"
+trace-mineral-stream = "trace_mineral_agent.streaming:main_streaming"
+trace-mineral-batch = "trace_mineral_agent.batch:main_batch"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/trace_mineral_agent"]
@@ -64,3 +66,7 @@ reportMissingTypeStubs = false
 testpaths = ["tests"]
 asyncio_mode = "auto"
 addopts = "-v --cov=trace_mineral_agent --cov-report=term-missing"
+markers = [
+    "integration: marks tests as integration tests requiring real API calls",
+    "slow: marks tests as slow running",
+]
