@@ -3,7 +3,8 @@
   "dependencies": ["./apps/agent"],
   "graphs": {
     "trace-mineral-discovery": "trace_mineral_agent.agent:agent",
-    "concierge-health": "trace_mineral_agent.concierge.agent:concierge_agent"
+    "concierge-health": "trace_mineral_agent.concierge.agent:concierge_agent",
+    "skin-intelligence": "trace_mineral_agent.skincare.agent:skin_intelligence_agent"
   },
   "env": "./apps/agent/.env"
 }
