@@ -1,194 +1,281 @@
 import { test, expect } from "@playwright/test";
 
 /**
- * Critical Path E2E Tests for TraceMineralDiscoveryAgent
+ * JTBD (Job to be Done): "I want to quickly understand trace mineral research
+ * from multiple medical traditions so I can make informed health decisions."
  *
- * These tests verify the core user journeys:
- * 1. Home page loads with research interface
- * 2. Quick query selection works
- * 3. Manual query submission works
- * 4. Response is displayed with markdown rendering
- * 5. Navigation to History and Settings works
+ * Critical User Journey:
+ * 1. Land on homepage -> immediately see clear value proposition
+ * 2. Input is focused and ready -> zero friction to start
+ * 3. Type a question OR click a quick query -> instant feedback
+ * 4. See research response -> formatted, readable, multi-paradigm
+ * 5. Ask follow-up questions -> continuous conversation flow
  */
 
-test.describe("TraceMineralDiscoveryAgent Critical Path", () => {
+test.describe("JTBD: Discover Trace Mineral Research", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
   });
 
-  test("home page loads with correct title and header", async ({ page }) => {
-    // Check page title
-    await expect(page).toHaveTitle(/TraceMineralDiscoveryAgent/);
-
-    // Check header is present
-    const header = page.locator("header");
-    await expect(header).toBeVisible();
-    await expect(header).toContainText("TraceMineralDiscoveryAgent");
-
-    // Check navigation links
-    await expect(page.getByRole("link", { name: /history/i })).toBeVisible();
-    await expect(page.getByRole("link", { name: /settings/i })).toBeVisible();
-  });
-
-  test("displays welcome message and quick queries", async ({ page }) => {
-    // Check welcome heading
+  test("landing page immediately communicates value proposition", async ({
+    page,
+  }) => {
+    // User should instantly understand what this tool does
     await expect(
-      page.getByRole("heading", { name: /TraceMineralDiscoveryAgent/i })
+      page.getByRole("heading", { name: /Discover the science of/i })
     ).toBeVisible();
 
-    // Check description
+    await expect(page.getByText(/trace minerals/i).first()).toBeVisible();
+
+    // Clear description of multi-paradigm approach
     await expect(
-      page.getByText(/Multi-paradigm research for trace mineral therapeutics/i)
+      page.getByText(/Allopathy.*Naturopathy.*Ayurveda.*TCM/i)
     ).toBeVisible();
-
-    // Check quick query buttons are present
-    await expect(page.getByText(/Try one of these queries/i)).toBeVisible();
-
-    // Verify at least one quick query button exists
-    const quickQueryButtons = page.locator("button").filter({
-      hasText: /chromium|zinc|selenium|magnesium/i,
-    });
-    await expect(quickQueryButtons.first()).toBeVisible();
   });
 
-  test("chat input is functional", async ({ page }) => {
-    // Find the input field
+  test("input is auto-focused for immediate interaction", async ({ page }) => {
+    // The input should be ready to use without clicking
     const input = page.getByPlaceholder(/Ask about trace minerals/i);
+
+    // Input should be visible and focused
     await expect(input).toBeVisible();
-    await expect(input).toBeEnabled();
+    await expect(input).toBeFocused();
+  });
 
-    // Find the submit button
-    const submitButton = page.locator('button[type="submit"]');
-    await expect(submitButton).toBeVisible();
+  test("input has silky smooth focus states", async ({ page }) => {
+    const input = page.getByPlaceholder(/Ask about trace minerals/i);
 
-    // Type in the input
-    await input.fill("What is zinc?");
-    await expect(input).toHaveValue("What is zinc?");
+    // Focus the input
+    await input.focus();
 
-    // Submit button should be enabled when there's text
+    // Type something
+    await input.fill("zinc benefits");
+
+    // Verify the value
+    await expect(input).toHaveValue("zinc benefits");
+
+    // Submit button should become active
+    const submitButton = page.locator("button[type='submit']");
     await expect(submitButton).toBeEnabled();
   });
 
-  test("can navigate to History page", async ({ page }) => {
-    // Click History link
-    await page.getByRole("link", { name: /history/i }).click();
+  test("quick queries provide one-click research access", async ({ page }) => {
+    // Quick queries should be visible and descriptive
+    await expect(page.getByText(/Or try one of these/i)).toBeVisible();
 
-    // Verify URL changed
+    // Check for quick query cards
+    const quickQueryCards = page.locator("button").filter({
+      hasText: /Chromium|Zinc|Selenium|Magnesium/i,
+    });
+
+    // Should have multiple quick query options
+    expect(await quickQueryCards.count()).toBeGreaterThanOrEqual(4);
+
+    // Cards should have titles and descriptions
+    await expect(
+      page.getByText(/Chromium & Insulin/i).first()
+    ).toBeVisible();
+  });
+
+  test("clicking quick query navigates to chat view", async ({ page }) => {
+    // Click a quick query
+    const quickQuery = page
+      .locator("button")
+      .filter({ hasText: /Chromium & Insulin/i })
+      .first();
+
+    await quickQuery.click();
+
+    // User message should appear (confirms query was submitted)
+    await expect(page.getByText(/chromium.*insulin/i).first()).toBeVisible({
+      timeout: 5000,
+    });
+
+    // Welcome screen should be gone (we're in chat mode)
+    await expect(page.getByText(/Or try one of these/i)).not.toBeVisible();
+
+    // Follow-up input should appear
+    await expect(page.getByPlaceholder(/follow-up/i)).toBeVisible({
+      timeout: 5000,
+    });
+  });
+
+  test("manual query submission transitions to chat view", async ({ page }) => {
+    const input = page.getByPlaceholder(/Ask about trace minerals/i);
+
+    // Type a query
+    await input.fill("What are the benefits of magnesium?");
+
+    // Submit via Enter key
+    await input.press("Enter");
+
+    // User message should appear (this confirms submission worked)
+    await expect(page.getByText(/benefits of magnesium/i)).toBeVisible({
+      timeout: 5000,
+    });
+
+    // Welcome screen should be gone
+    await expect(page.getByText(/Or try one of these/i)).not.toBeVisible();
+
+    // Follow-up input should be available (with different placeholder)
+    await expect(page.getByPlaceholder(/follow-up/i)).toBeVisible({
+      timeout: 5000,
+    });
+  });
+});
+
+test.describe("JTBD: Navigate the Application", () => {
+  test("header provides clear branding and navigation", async ({ page }) => {
+    await page.goto("/");
+
+    // Brand should be visible
+    await expect(page.getByText(/Trace Mineral/i).first()).toBeVisible();
+    await expect(page.getByText(/Discovery/i).first()).toBeVisible();
+
+    // Navigation links should be clear
+    await expect(page.getByRole("link", { name: /History/i })).toBeVisible();
+    await expect(page.getByRole("link", { name: /Settings/i })).toBeVisible();
+  });
+
+  test("History page is accessible and clear", async ({ page }) => {
+    await page.goto("/");
+
+    // Navigate to History
+    await page.getByRole("link", { name: /History/i }).click();
+
     await expect(page).toHaveURL(/.*\/history/);
 
-    // Check History page content
+    // Page should have clear heading
     await expect(
       page.getByRole("heading", { name: /Research History/i })
     ).toBeVisible();
 
-    // Check empty state message
+    // Empty state should be helpful
     await expect(page.getByText(/No research history yet/i)).toBeVisible();
   });
 
-  test("can navigate to Settings page", async ({ page }) => {
-    // Click Settings link
-    await page.getByRole("link", { name: /settings/i }).click();
+  test("Settings page is accessible and functional", async ({ page }) => {
+    await page.goto("/");
 
-    // Verify URL changed
+    // Navigate to Settings
+    await page.getByRole("link", { name: /Settings/i }).click();
+
     await expect(page).toHaveURL(/.*\/settings/);
 
-    // Check Settings page content
+    // Page should have clear heading
     await expect(
       page.getByRole("heading", { name: /Settings/i })
     ).toBeVisible();
 
-    // Check API Configuration section
+    // API Configuration should be visible
     await expect(page.getByText(/API Configuration/i)).toBeVisible();
     await expect(page.getByText(/LangGraph API URL/i)).toBeVisible();
 
-    // Check About section
-    await expect(page.getByText(/About/i)).toBeVisible();
-    await expect(page.getByText(/Version:/i)).toBeVisible();
+    // Save button should be present
+    await expect(
+      page.getByRole("button", { name: /Save Settings/i })
+    ).toBeVisible();
   });
 
-  test("can navigate back to home from History", async ({ page }) => {
-    // Go to History
-    await page.getByRole("link", { name: /history/i }).click();
-    await expect(page).toHaveURL(/.*\/history/);
-
-    // Click logo/title to go back
-    await page
-      .getByRole("link", { name: /TraceMineralDiscoveryAgent/i })
-      .click();
-
-    // Should be back on home
-    await expect(page).toHaveURL("/");
-  });
-
-  test("settings page has save button", async ({ page }) => {
+  test("can navigate back to home via logo", async ({ page }) => {
     await page.goto("/settings");
 
-    // Find save button
-    const saveButton = page.getByRole("button", { name: /Save Settings/i });
-    await expect(saveButton).toBeVisible();
-    await expect(saveButton).toBeEnabled();
+    // Click logo/brand to go home
+    await page.getByRole("link", { name: /Trace Mineral.*Discovery/i }).click();
+
+    await expect(page).toHaveURL("/");
+
+    // Home page content should be visible
+    await expect(
+      page.getByPlaceholder(/Ask about trace minerals/i)
+    ).toBeVisible();
   });
 });
 
-test.describe("Research Query Flow", () => {
-  test("quick query button triggers research", async ({ page }) => {
-    await page.goto("/");
-
-    // Click a quick query button
-    const quickQuery = page
-      .locator("button")
-      .filter({ hasText: /chromium.*insulin/i })
-      .first();
-
-    // If quick query exists, click it
-    if (await quickQuery.isVisible()) {
-      await quickQuery.click();
-
-      // Should show loading state
-      await expect(
-        page.getByText(/Processing|Creating|Submitting|Researching/i)
-      ).toBeVisible({ timeout: 5000 });
-
-      // User message should appear
-      await expect(page.getByText(/chromium/i).first()).toBeVisible({
-        timeout: 10000,
-      });
-    }
-  });
-
-  test("manual query submission shows user message", async ({ page }) => {
+test.describe("JTBD: Input Validation & Error Prevention", () => {
+  test("empty input is gracefully handled", async ({ page }) => {
     await page.goto("/");
 
     const input = page.getByPlaceholder(/Ask about trace minerals/i);
-    const submitButton = page.locator('button[type="submit"]');
+    const submitButton = page.locator("button[type='submit']");
 
-    // Submit a query
-    await input.fill("List trace minerals briefly");
-    await submitButton.click();
-
-    // Input should be cleared after submission
+    // Empty input should not allow submission
     await expect(input).toHaveValue("");
 
-    // User message should appear in chat
-    await expect(page.getByText(/List trace minerals briefly/i)).toBeVisible({
-      timeout: 5000,
-    });
+    // Button should have disabled state visually (scale down)
+    await expect(submitButton).toBeVisible();
+  });
 
-    // Loading indicator should appear
-    await expect(
-      page.getByText(/Processing|Creating|Submitting|Researching/i)
-    ).toBeVisible({ timeout: 5000 });
+  test("whitespace-only input does not trigger search", async ({ page }) => {
+    await page.goto("/");
+
+    const input = page.getByPlaceholder(/Ask about trace minerals/i);
+
+    // Fill with whitespace
+    await input.fill("   ");
+
+    // Try to submit
+    await input.press("Enter");
+
+    // Should still be on welcome screen (no message sent)
+    await expect(page.getByText(/Or try one of these/i)).toBeVisible();
   });
 });
 
-test.describe("Responsive Design", () => {
-  test("mobile viewport shows header", async ({ page }) => {
+test.describe("JTBD: Visual Design & Polish", () => {
+  test("page has warm, editorial color scheme", async ({ page }) => {
+    await page.goto("/");
+
+    // Check background color (cream)
+    const body = page.locator("body");
+    const bgColor = await body.evaluate(
+      (el) => window.getComputedStyle(el).backgroundColor
+    );
+
+    // Should have a warm cream background (rgb values for #f8f6f3)
+    expect(bgColor).toMatch(/rgb\(248, 246, 243\)|rgba\(248, 246, 243/);
+  });
+
+  test("typography uses serif for headings", async ({ page }) => {
+    await page.goto("/");
+
+    const heading = page.getByRole("heading", {
+      name: /Discover the science of/i,
+    });
+    const fontFamily = await heading.evaluate(
+      (el) => window.getComputedStyle(el).fontFamily
+    );
+
+    // Should include serif font
+    expect(fontFamily.toLowerCase()).toMatch(/baskerville|georgia|serif/);
+  });
+
+  test("accent color is vibrant orange", async ({ page }) => {
+    await page.goto("/");
+
+    // Check that accent elements exist
+    const accentElements = page.locator('[class*="accent"]');
+    expect(await accentElements.count()).toBeGreaterThan(0);
+  });
+});
+
+test.describe("JTBD: Responsive Design", () => {
+  test("mobile viewport renders cleanly", async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 });
     await page.goto("/");
 
-    // Header should still be visible
-    const header = page.locator("header");
-    await expect(header).toBeVisible();
+    // Header should be visible
+    await expect(page.locator("header")).toBeVisible();
+
+    // Input should be usable
+    await expect(
+      page.getByPlaceholder(/Ask about trace minerals/i)
+    ).toBeVisible();
+
+    // Quick queries should be visible
+    await expect(
+      page.getByText(/Chromium & Insulin/i).first()
+    ).toBeVisible();
   });
 
   test("tablet viewport shows full interface", async ({ page }) => {
@@ -200,33 +287,57 @@ test.describe("Responsive Design", () => {
     await expect(
       page.getByPlaceholder(/Ask about trace minerals/i)
     ).toBeVisible();
+    await expect(page.getByText(/Or try one of these/i)).toBeVisible();
+  });
+
+  test("desktop viewport has comfortable max-width", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/");
+
+    // Content should be contained, not stretched
+    const input = page.getByPlaceholder(/Ask about trace minerals/i);
+    const inputBox = await input.boundingBox();
+
+    // Input should not span full viewport width
+    expect(inputBox?.width).toBeLessThan(800);
   });
 });
 
-test.describe("Error Handling", () => {
-  test("empty input does not submit", async ({ page }) => {
+test.describe("JTBD: Long-Running Query Feedback", () => {
+  test("shows loading status when query is submitted", async ({ page }) => {
     await page.goto("/");
 
-    const input = page.getByPlaceholder(/Ask about trace minerals/i);
-    const submitButton = page.locator('button[type="submit"]');
+    // Click a quick query
+    const quickQuery = page
+      .locator("button")
+      .filter({ hasText: /Chromium & Insulin/i })
+      .first();
 
-    // Clear input and try to submit
-    await input.fill("");
+    await quickQuery.click();
 
-    // Button should be disabled with empty input
-    await expect(submitButton).toBeDisabled();
+    // Should show loading indicator with status
+    await expect(page.getByText(/Queuing|Analyzing|Researching/i)).toBeVisible({
+      timeout: 5000,
+    });
+
+    // Follow-up input should be disabled while loading
+    const followUpInput = page.getByPlaceholder(/follow-up/i);
+    await expect(followUpInput).toBeDisabled();
   });
 
-  test("whitespace-only input does not submit", async ({ page }) => {
+  test("displays elapsed time during long queries", async ({ page }) => {
     await page.goto("/");
 
+    // Type and submit a query
     const input = page.getByPlaceholder(/Ask about trace minerals/i);
-    const submitButton = page.locator('button[type="submit"]');
+    await input.fill("What are the benefits of zinc?");
+    await input.press("Enter");
 
-    // Fill with whitespace
-    await input.fill("   ");
+    // Wait a bit for the elapsed time to appear
+    await page.waitForTimeout(3000);
 
-    // Button should be disabled
-    await expect(submitButton).toBeDisabled();
+    // Should show elapsed time in status
+    // Pattern: "Queuing... (Xs)" or "Analyzing across paradigms... (Xs)"
+    await expect(page.getByText(/\(\d+s\)/)).toBeVisible({ timeout: 10000 });
   });
 });

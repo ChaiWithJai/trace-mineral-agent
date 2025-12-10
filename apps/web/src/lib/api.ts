@@ -1,4 +1,7 @@
-const API_URL = process.env.LANGGRAPH_API_URL || "http://127.0.0.1:2024";
+const API_URL =
+  typeof window !== "undefined"
+    ? localStorage.getItem("langgraph_api_url") || "http://127.0.0.1:2024"
+    : process.env.LANGGRAPH_API_URL || "http://127.0.0.1:2024";
 const ASSISTANT_ID = "trace-mineral-discovery";
 
 interface Message {
@@ -24,6 +27,9 @@ interface ThreadState {
     }>;
   };
 }
+
+// Track active polling operations for cancellation
+let activeAbortController: AbortController | null = null;
 
 export async function createThread(): Promise<string> {
   const response = await fetch(`${API_URL}/threads`, {
@@ -92,34 +98,81 @@ export async function getThreadState(threadId: string): Promise<ThreadState> {
   return response.json();
 }
 
+/**
+ * Cancel any active run by aborting the polling operation.
+ */
+export function cancelActiveRun(): void {
+  if (activeAbortController) {
+    activeAbortController.abort();
+    activeAbortController = null;
+  }
+}
+
+/**
+ * Poll for run completion with cancellation support.
+ * Provides elapsed time feedback via onProgress callback.
+ */
 export async function pollForCompletion(
   threadId: string,
   runId: string,
-  onProgress?: (status: string) => void,
+  onProgress?: (status: string, elapsedSeconds?: number) => void,
   maxAttempts = 120,
   interval = 2000
 ): Promise<string> {
+  // Cancel any existing polling operation
+  cancelActiveRun();
+
+  // Create new abort controller for this polling operation
+  activeAbortController = new AbortController();
+  const { signal } = activeAbortController;
+
+  const startTime = Date.now();
+
   for (let i = 0; i < maxAttempts; i++) {
-    const status = await getRunStatus(threadId, runId);
-
-    if (onProgress) {
-      onProgress(status.status);
+    // Check if aborted
+    if (signal.aborted) {
+      throw new Error("Request cancelled.");
     }
 
-    if (status.status === "success") {
-      const state = await getThreadState(threadId);
-      const messages = state.values.messages;
-      const lastMessage = messages[messages.length - 1];
-      return lastMessage?.content || "No response received.";
-    }
+    try {
+      const status = await getRunStatus(threadId, runId);
+      const elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
 
-    if (status.status === "error" || status.status === "failed") {
-      throw new Error("Research query failed. Please try again.");
-    }
+      if (onProgress) {
+        onProgress(status.status, elapsedSeconds);
+      }
 
-    await new Promise((resolve) => setTimeout(resolve, interval));
+      if (status.status === "success") {
+        activeAbortController = null;
+        const state = await getThreadState(threadId);
+        const messages = state.values.messages;
+        const lastMessage = messages[messages.length - 1];
+        return lastMessage?.content || "No response received.";
+      }
+
+      if (status.status === "error" || status.status === "failed") {
+        activeAbortController = null;
+        throw new Error("Research query failed. Please try again.");
+      }
+
+      // Wait with abort check
+      await new Promise((resolve, reject) => {
+        const timeout = setTimeout(resolve, interval);
+        signal.addEventListener("abort", () => {
+          clearTimeout(timeout);
+          reject(new Error("Request cancelled."));
+        });
+      });
+    } catch (err) {
+      if (err instanceof Error && err.message === "Request cancelled.") {
+        throw err;
+      }
+      // Network error - retry
+      console.warn("Polling error, retrying:", err);
+    }
   }
 
+  activeAbortController = null;
   throw new Error("Request timed out. Please try a simpler query.");
 }
 

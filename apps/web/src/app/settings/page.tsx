@@ -1,7 +1,7 @@
 "use client";
 
 import { Header } from "@/components";
-import { Settings, Server } from "lucide-react";
+import { Settings, Server, Info } from "lucide-react";
 import { useState } from "react";
 
 export default function SettingsPage() {
@@ -10,62 +10,66 @@ export default function SettingsPage() {
   );
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-cream-100">
       <Header />
-      <main className="flex-1 max-w-4xl w-full mx-auto p-8">
-        <div className="flex items-center gap-3 mb-8">
-          <Settings className="w-8 h-8 text-mineral-500" />
-          <h1 className="text-2xl font-bold">Settings</h1>
+      <main className="flex-1 max-w-3xl w-full mx-auto px-6 py-12">
+        <div className="flex items-center gap-3 mb-10">
+          <div className="w-12 h-12 rounded-2xl bg-accent/10 flex items-center justify-center">
+            <Settings className="w-6 h-6 text-accent" />
+          </div>
+          <h1 className="font-serif text-3xl font-bold text-charcoal">Settings</h1>
         </div>
 
         <div className="space-y-6">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
-            <div className="flex items-center gap-2 mb-4">
-              <Server className="w-5 h-5 text-gray-500" />
-              <h2 className="font-semibold">API Configuration</h2>
+          <div className="bg-white rounded-3xl p-8 border border-cream-300 shadow-sm">
+            <div className="flex items-center gap-3 mb-6">
+              <Server className="w-5 h-5 text-charcoal-light" />
+              <h2 className="font-semibold text-lg text-charcoal">API Configuration</h2>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-sm font-medium text-charcoal mb-2">
                   LangGraph API URL
                 </label>
                 <input
                   type="text"
                   value={apiUrl}
                   onChange={(e) => setApiUrl(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-mineral-500"
+                  className="w-full px-4 py-3 rounded-xl border-2 border-cream-300 bg-cream-50 focus:border-accent focus:ring-2 focus:ring-accent/20 focus:outline-none transition-all"
                 />
-                <p className="mt-1 text-xs text-gray-500">
+                <p className="mt-2 text-sm text-charcoal-light">
                   The URL of the LangGraph API server
                 </p>
               </div>
 
               <button
                 onClick={() => {
-                  // In a real app, this would save to localStorage or context
                   alert("Settings saved!");
                 }}
-                className="px-4 py-2 bg-mineral-500 text-white rounded-lg hover:bg-mineral-600 transition-colors"
+                className="px-6 py-3 bg-accent text-white font-medium rounded-xl hover:bg-accent-dark transition-colors shadow-lg shadow-accent/20"
               >
                 Save Settings
               </button>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
-            <h2 className="font-semibold mb-4">About</h2>
-            <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+          <div className="bg-white rounded-3xl p-8 border border-cream-300 shadow-sm">
+            <div className="flex items-center gap-3 mb-6">
+              <Info className="w-5 h-5 text-charcoal-light" />
+              <h2 className="font-semibold text-lg text-charcoal">About</h2>
+            </div>
+            <div className="space-y-3 text-charcoal-light leading-relaxed">
               <p>
-                <strong>TraceMineralDiscoveryAgent</strong> is a multi-paradigm
+                <strong className="text-charcoal">Trace Mineral Discovery</strong> is a multi-paradigm
                 research agent for trace mineral therapeutics.
               </p>
               <p>
                 It synthesizes evidence from Allopathy, Naturopathy, Ayurveda,
                 TCM, Unani, and Siddha medicine traditions.
               </p>
-              <p className="pt-2">
-                Version: 0.1.0
+              <p className="pt-3 text-sm">
+                <span className="text-charcoal font-medium">Version:</span> 0.1.0
               </p>
             </div>
           </div>

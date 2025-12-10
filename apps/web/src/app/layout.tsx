@@ -1,13 +1,10 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 
-const inter = Inter({ subsets: ["latin"] });
-
 export const metadata: Metadata = {
-  title: "TraceMineralDiscoveryAgent",
-  description: "Multi-paradigm research agent for trace mineral therapeutics",
+  title: "Trace Mineral Discovery",
+  description: "Multi-paradigm research for trace mineral therapeutics",
 };
 
 export default function RootLayout({
@@ -17,7 +14,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className="bg-cream-100 text-charcoal antialiased">
         <Providers>{children}</Providers>
       </body>
     </html>

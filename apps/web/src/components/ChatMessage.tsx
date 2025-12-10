@@ -2,7 +2,7 @@
 
 import ReactMarkdown from "react-markdown";
 import { clsx } from "clsx";
-import { User, Bot } from "lucide-react";
+import { User, Sparkles } from "lucide-react";
 
 interface ChatMessageProps {
   role: "user" | "assistant";
@@ -12,27 +12,31 @@ interface ChatMessageProps {
 export function ChatMessage({ role, content }: ChatMessageProps) {
   const isUser = role === "user";
 
-  return (
-    <div
-      className={clsx(
-        "flex gap-4 p-4 rounded-lg",
-        isUser ? "bg-mineral-50 dark:bg-mineral-900/20" : "bg-white dark:bg-gray-800"
-      )}
-    >
-      <div
-        className={clsx(
-          "flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center",
-          isUser ? "bg-mineral-500 text-white" : "bg-gray-200 dark:bg-gray-700"
-        )}
-      >
-        {isUser ? <User className="w-5 h-5" /> : <Bot className="w-5 h-5" />}
-      </div>
-      <div className="flex-1 overflow-hidden">
-        <div className="font-medium text-sm text-gray-500 dark:text-gray-400 mb-1">
-          {isUser ? "You" : "TraceMineralDiscoveryAgent"}
+  if (isUser) {
+    return (
+      <div className="flex justify-end">
+        <div className="flex items-start gap-3 max-w-[80%]">
+          <div className="bg-charcoal text-cream-100 rounded-2xl rounded-tr-sm px-5 py-3">
+            <p className="text-sm leading-relaxed">{content}</p>
+          </div>
+          <div className="flex-shrink-0 w-8 h-8 rounded-xl bg-charcoal/10 flex items-center justify-center">
+            <User className="w-4 h-4 text-charcoal" />
+          </div>
         </div>
-        <div className="prose prose-sm dark:prose-invert max-w-none">
-          <ReactMarkdown>{content}</ReactMarkdown>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-start gap-3">
+      <div className="flex-shrink-0 w-8 h-8 rounded-xl bg-accent/10 flex items-center justify-center">
+        <Sparkles className="w-4 h-4 text-accent" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="bg-white border border-cream-300 rounded-2xl rounded-tl-sm px-6 py-5 overflow-hidden">
+          <div className="prose max-w-none">
+            <ReactMarkdown>{content}</ReactMarkdown>
+          </div>
         </div>
       </div>
     </div>

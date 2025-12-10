@@ -1,0 +1,147 @@
+{
+  "incident_id": "INC-2025-12-07-001",
+  "title": "Long-Running Queries Appear to Hang UI Without Feedback",
+  "severity": "medium",
+  "status": "resolved",
+  "reported_at": "2025-12-07T03:00:00Z",
+  "resolved_at": "2025-12-07T04:00:00Z",
+  "reporter": "claude-code",
+  "summary": "User-submitted research queries to the TraceMineralDiscoveryAgent appeared to hang indefinitely without feedback. The UI would show 'Analyzing across paradigms...' for extended periods (60+ seconds) with no indication of progress or elapsed time.",
+
+  "root_cause": {
+    "primary": "Worker Queue Saturation",
+    "description": "LangGraph's in-memory runtime defaults to max=1 concurrent worker. The TraceMineralDiscoveryAgent is a complex multi-agent system with 7 subagents (allopathy, naturopathy, ayurveda, tcm, unani, siddha, synthesis) that makes multiple LLM calls per query. Each query takes 30-120+ seconds to complete.",
+    "contributing_factors": [
+      {
+        "factor": "Single Worker Limitation",
+        "details": "LangGraph API configured with max=1 worker. Queue stats showed: active=3, available=-2, max=1, n_running=3 - indicating severe worker starvation."
+      },
+      {
+        "factor": "No Elapsed Time Feedback",
+        "details": "UI displayed static status messages ('Queuing...', 'Analyzing across paradigms...') without any indication of how long the query had been running."
+      },
+      {
+        "factor": "Multiple Concurrent Sessions",
+        "details": "Multiple browser tabs/sessions submitting queries caused queue backlog. Polling from multiple clients added network overhead."
+      },
+      {
+        "factor": "No Cancellation Support",
+        "details": "Users could not cancel in-flight requests. Starting a new query while one was processing created orphaned polling operations."
+      }
+    ]
+  },
+
+  "symptoms": [
+    {
+      "symptom": "UI shows 'Analyzing across paradigms...' indefinitely",
+      "frequency": "consistent",
+      "user_impact": "high"
+    },
+    {
+      "symptom": "422 Unprocessable Entity errors in API logs",
+      "frequency": "intermittent",
+      "user_impact": "medium"
+    },
+    {
+      "symptom": "Follow-up input disabled for extended periods",
+      "frequency": "consistent",
+      "user_impact": "high"
+    }
+  ],
+
+  "investigation": {
+    "timeline": [
+      {
+        "time": "T+0",
+        "action": "Observed UI hanging on 'Analyzing across paradigms...' after quick query click"
+      },
+      {
+        "time": "T+5",
+        "action": "Checked API logs - found multiple 200 OK responses from Anthropic API, confirming LLM calls were succeeding"
+      },
+      {
+        "time": "T+10",
+        "action": "Identified worker saturation: 'active=3, available=-2, max=1, n_running=3'"
+      },
+      {
+        "time": "T+15",
+        "action": "Manual API test confirmed runs complete successfully with 'success' status"
+      },
+      {
+        "time": "T+20",
+        "action": "Root cause identified: polling-based status updates without elapsed time + worker queue contention"
+      }
+    ],
+    "tools_used": [
+      "tmux capture-pane (API log monitoring)",
+      "curl (direct API testing)",
+      "Playwright browser automation (UI state observation)",
+      "Browser network requests (HTTP traffic analysis)"
+    ]
+  },
+
+  "resolution": {
+    "changes": [
+      {
+        "file": "apps/web/src/lib/api.ts",
+        "change_type": "enhancement",
+        "description": "Added AbortController-based cancellation support for polling operations. New function cancelActiveRun() allows cancelling in-flight requests. pollForCompletion() now accepts optional elapsedSeconds parameter in onProgress callback."
+      },
+      {
+        "file": "apps/web/src/components/ResearchChat.tsx",
+        "change_type": "enhancement",
+        "description": "Updated to display elapsed time in status messages (e.g., 'Analyzing across paradigms... (45s)'). Added cleanup on component unmount to cancel active runs. Graceful handling of cancelled requests (no error display)."
+      },
+      {
+        "file": "apps/web/e2e/critical-path.spec.ts",
+        "change_type": "test",
+        "description": "Added 2 new regression tests: 'shows loading status when query is submitted' and 'displays elapsed time during long queries'"
+      }
+    ],
+    "verification": {
+      "tests_added": 2,
+      "tests_passing": 20,
+      "manual_verification": "UI now displays elapsed time during long-running queries, providing user feedback"
+    }
+  },
+
+  "lessons_learned": [
+    {
+      "category": "UX",
+      "lesson": "Long-running operations must always show elapsed time or progress indication",
+      "action": "Established as standard pattern for all async operations"
+    },
+    {
+      "category": "Architecture",
+      "lesson": "Single-worker API limits can cause queue saturation with complex agents",
+      "action": "Consider increasing worker count for production or implementing request throttling"
+    },
+    {
+      "category": "Testing",
+      "lesson": "E2E tests should verify feedback mechanisms for async operations",
+      "action": "Added test coverage for elapsed time display"
+    }
+  ],
+
+  "recommendations": {
+    "short_term": [
+      "Consider adding a 'Cancel' button for in-flight queries",
+      "Add visual progress stages showing which paradigm is being analyzed"
+    ],
+    "long_term": [
+      "Implement Server-Sent Events (SSE) for real-time streaming responses",
+      "Add request queuing with position indicator ('You are #2 in queue')",
+      "Scale worker pool based on load"
+    ]
+  },
+
+  "metadata": {
+    "affected_components": [
+      "apps/web (frontend)",
+      "apps/agent (TraceMineralDiscoveryAgent)"
+    ],
+    "api_version": "LangGraph API 0.5.30",
+    "agent_version": "TraceMineralDiscoveryAgent (7 subagents)",
+    "environment": "local development"
+  }
+}
