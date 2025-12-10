@@ -1,5 +1,6 @@
 """Main agent entry point for TraceMineralDiscoveryAgent."""
 
+import argparse
 import os
 
 from deepagents import create_deep_agent
@@ -10,15 +11,22 @@ from .subagents import (
     allopathy_subagent,
     ayurveda_subagent,
     naturopathy_subagent,
+    siddha_subagent,
     synthesis_subagent,
     tcm_subagent,
+    unani_subagent,
 )
 from .tools import (
+    assess_constitution,
     check_drug_interactions,
     evidence_grade,
+    export_citations,
+    format_citation_for_report,
+    get_constitutional_mineral_overview,
     list_mineral_interactions,
     literature_search,
     paradigm_mapper,
+    personalize_mineral_recommendation,
     synthesis_reporter,
 )
 
@@ -51,12 +59,19 @@ def create_trace_mineral_agent(
             synthesis_reporter,
             check_drug_interactions,
             list_mineral_interactions,
+            export_citations,
+            format_citation_for_report,
+            assess_constitution,
+            personalize_mineral_recommendation,
+            get_constitutional_mineral_overview,
         ],
         subagents=[
             allopathy_subagent,
             naturopathy_subagent,
             ayurveda_subagent,
             tcm_subagent,
+            unani_subagent,
+            siddha_subagent,
             synthesis_subagent,
         ],
         system_prompt=TRACE_MINERAL_SYSTEM_PROMPT,
@@ -70,6 +85,21 @@ agent = create_trace_mineral_agent()
 
 def main() -> None:
     """Run the agent in interactive mode."""
+    parser = argparse.ArgumentParser(description="TraceMineralDiscoveryAgent CLI")
+    parser.add_argument(
+        "--stream",
+        action="store_true",
+        help="Enable streaming mode for real-time feedback",
+    )
+    args = parser.parse_args()
+
+    # Use streaming mode if requested
+    if args.stream:
+        from .streaming import main_streaming
+
+        main_streaming()
+        return
+
     print_welcome()
 
     # Show tracing status
