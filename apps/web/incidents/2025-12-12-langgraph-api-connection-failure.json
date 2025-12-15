@@ -34,7 +34,8 @@
     "primary_issues": [
       "Hardcoded localhost API URL in production deployment",
       "Missing authentication headers for LangGraph Cloud API",
-      "deepagents library bug: string model identifier caused AttributeError"
+      "deepagents library bug: string model identifier caused AttributeError",
+      "netlify.toml overriding env vars with empty strings"
     ],
     "explanation": "Three cascading issues prevented the production UI from working: (1) The UI was calling localhost instead of LangGraph Cloud because env vars weren't exposed to the client bundle, (2) LangGraph Cloud requires x-api-key header authentication, (3) The backend itself was failing to start due to a bug in deepagents where passing a string model ID caused 'str' object has no attribute 'profile' error.",
     "code_locations": [
@@ -69,6 +70,11 @@
         "sha": "9e6cbf1",
         "message": "feat: Add LangSmith API key authentication to LangGraph API calls",
         "description": "Added x-api-key header to all fetch calls using getHeaders() helper"
+      },
+      {
+        "sha": "356dbee",
+        "message": "fix: Remove empty env var overrides from netlify.toml",
+        "description": "The [context.production.environment] LANGGRAPH_API_URL = '' was overriding Netlify CLI env vars with empty string"
       }
     ],
     "netlify_env_vars_set": [
