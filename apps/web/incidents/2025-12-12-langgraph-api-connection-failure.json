@@ -1,0 +1,106 @@
+{
+  "id": "INC-2025-12-12-001",
+  "title": "LangGraph API Connection Failure - Production UI Cannot Reach Backend",
+  "severity": "critical",
+  "status": "resolved",
+  "detected_at": "2025-12-12T10:30:00Z",
+  "resolved_at": "2025-12-15T21:26:00Z",
+  "environment": "production",
+  "affected_url": "https://trace-mineral-agent.netlify.app",
+
+  "symptoms": [
+    "User clicks example query 'Chromium & Insulin'",
+    "UI shows error: 'Failed to send message: Unprocessable Content'",
+    "422 HTTP status code returned from API"
+  ],
+
+  "network_trace": {
+    "successful_requests": [
+      "GET https://trace-mineral-agent.netlify.app/history => 200",
+      "GET https://trace-mineral-agent.netlify.app/settings => 200",
+      "POST http://127.0.0.1:2024/threads => 200 OK"
+    ],
+    "failed_requests": [
+      {
+        "method": "POST",
+        "url": "http://127.0.0.1:2024/threads/{thread_id}/runs",
+        "status": 422,
+        "status_text": "Unprocessable Content"
+      }
+    ]
+  },
+
+  "root_cause_analysis": {
+    "primary_issues": [
+      "Hardcoded localhost API URL in production deployment",
+      "Missing authentication headers for LangGraph Cloud API",
+      "deepagents library bug: string model identifier caused AttributeError"
+    ],
+    "explanation": "Three cascading issues prevented the production UI from working: (1) The UI was calling localhost instead of LangGraph Cloud because env vars weren't exposed to the client bundle, (2) LangGraph Cloud requires x-api-key header authentication, (3) The backend itself was failing to start due to a bug in deepagents where passing a string model ID caused 'str' object has no attribute 'profile' error.",
+    "code_locations": [
+      "apps/web/src/lib/api.ts:1-4 - API URL defaulting to localhost",
+      "apps/web/next.config.mjs - missing NEXT_PUBLIC_ env var exposure",
+      "apps/agent/src/trace_mineral_agent/agent.py:45 - string model passed to create_deep_agent"
+    ],
+
+    "chain_of_failure": [
+      "1. Backend: deepagents 0.3.0 crashes when model='string' passed (AttributeError: 'str' object has no attribute 'profile')",
+      "2. LangGraph Cloud deployment fails to start, logs show GraphLoadError",
+      "3. UI deployed to Netlify without NEXT_PUBLIC_LANGGRAPH_API_URL",
+      "4. Browser falls back to localhost:2024",
+      "5. No x-api-key header sent with requests",
+      "6. Even if backend was up, requests would fail with 401/422"
+    ]
+  },
+
+  "resolution": {
+    "commits": [
+      {
+        "sha": "e93d2c6",
+        "message": "fix: Pass ChatAnthropic instance instead of string to create_deep_agent",
+        "description": "Fixed deepagents bug workaround by instantiating ChatAnthropic directly instead of passing string model identifier"
+      },
+      {
+        "sha": "f58361f",
+        "message": "fix: Use NEXT_PUBLIC env var for client-side LangGraph API URL",
+        "description": "Exposed LANGGRAPH_API_URL and LANGSMITH_API_KEY as NEXT_PUBLIC_ vars so they're inlined in client bundle at build time"
+      },
+      {
+        "sha": "9e6cbf1",
+        "message": "feat: Add LangSmith API key authentication to LangGraph API calls",
+        "description": "Added x-api-key header to all fetch calls using getHeaders() helper"
+      }
+    ],
+    "netlify_env_vars_set": [
+      "LANGGRAPH_API_URL=https://trace-mineral-prod-024e4d504c58520ba69d956e6db5692a.us.langgraph.app",
+      "LANGSMITH_API_KEY=lsv2_pt_***"
+    ],
+    "verification": {
+      "api_test": "curl POST /threads with x-api-key returns 200 with thread_id",
+      "bundle_check": "JS chunk contains correct API URL and key (verified via grep)"
+    }
+  },
+
+  "technical_details": {
+    "stack_trace": "AttributeError: 'str' object has no attribute 'profile' at deepagents/graph.py:102",
+    "api_client_file": "apps/web/src/lib/api.ts",
+    "config_file": "apps/web/next.config.mjs",
+    "assistant_id": "trace-mineral-discovery",
+    "langgraph_cloud_url": "https://trace-mineral-prod-024e4d504c58520ba69d956e6db5692a.us.langgraph.app"
+  },
+
+  "lessons_learned": [
+    "Next.js requires NEXT_PUBLIC_ prefix for client-side env vars - process.env.FOO only works server-side",
+    "LangGraph Cloud requires x-api-key header authentication - not optional",
+    "Library type hints can be misleading - deepagents accepts str|BaseChatModel but doesn't actually handle strings",
+    "Always test production deployments with real backend, not localhost",
+    "Consider adding a health check endpoint or connectivity indicator in UI"
+  ],
+
+  "preventive_measures": [
+    "Add CI check that verifies NEXT_PUBLIC_ env vars are set before deploy",
+    "Add runtime check in UI that validates API connectivity on load",
+    "Pin deepagents version and document the string model bug",
+    "Add integration tests that run against staging/production URLs"
+  ]
+}
