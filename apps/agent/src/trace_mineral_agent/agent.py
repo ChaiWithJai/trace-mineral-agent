@@ -3,6 +3,7 @@
 import os
 
 from deepagents import create_deep_agent
+from langchain_anthropic import ChatAnthropic
 
 from .observability import configure_langsmith, is_tracing_enabled, trace_research_query
 from .prompts import QUICK_QUESTIONS, TRACE_MINERAL_SYSTEM_PROMPT, print_welcome
@@ -27,20 +28,28 @@ configure_langsmith()
 
 
 def create_trace_mineral_agent(
-    model: str = "anthropic:claude-sonnet-4-5-20250929",
+    model: str | ChatAnthropic | None = None,
     use_memory: bool = True,
 ):
     """
     Create the TraceMineralDiscoveryAgent.
 
     Args:
-        model: Model identifier to use (default: Claude Sonnet 4.5)
+        model: Model identifier or ChatAnthropic instance (default: Claude Sonnet 4.5)
         use_memory: Whether to enable memory/checkpointing
 
     Returns:
         Configured deep agent instance
     """
     running_in_langgraph_api = os.getenv("LANGGRAPH_API_URL") is not None
+
+    # Convert string model identifier to ChatAnthropic instance
+    # deepagents 0.3.0 has a bug where it accepts strings in type hints but doesn't handle them
+    if model is None or isinstance(model, str):
+        model = ChatAnthropic(
+            model_name="claude-sonnet-4-5-20250929",
+            max_tokens=20000,
+        )
 
     return create_deep_agent(
         model=model,
