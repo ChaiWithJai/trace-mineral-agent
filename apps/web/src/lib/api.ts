@@ -2,7 +2,19 @@ const API_URL =
   typeof window !== "undefined"
     ? localStorage.getItem("langgraph_api_url") || process.env.NEXT_PUBLIC_LANGGRAPH_API_URL || "http://127.0.0.1:2024"
     : process.env.LANGGRAPH_API_URL || "http://127.0.0.1:2024";
+const API_KEY = process.env.NEXT_PUBLIC_LANGSMITH_API_KEY || "";
 const ASSISTANT_ID = "trace-mineral-discovery";
+
+// Build headers with optional API key authentication
+function getHeaders(): Record<string, string> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (API_KEY) {
+    headers["x-api-key"] = API_KEY;
+  }
+  return headers;
+}
 
 interface Message {
   role: "user" | "assistant";
@@ -34,7 +46,7 @@ let activeAbortController: AbortController | null = null;
 export async function createThread(): Promise<string> {
   const response = await fetch(`${API_URL}/threads`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: getHeaders(),
     body: JSON.stringify({}),
   });
 
@@ -52,7 +64,7 @@ export async function sendMessage(
 ): Promise<RunResponse> {
   const response = await fetch(`${API_URL}/threads/${threadId}/runs`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: getHeaders(),
     body: JSON.stringify({
       assistant_id: ASSISTANT_ID,
       input: {
@@ -76,6 +88,7 @@ export async function getRunStatus(
     `${API_URL}/threads/${threadId}/runs/${runId}`,
     {
       method: "GET",
+      headers: getHeaders(),
     }
   );
 
@@ -89,6 +102,7 @@ export async function getRunStatus(
 export async function getThreadState(threadId: string): Promise<ThreadState> {
   const response = await fetch(`${API_URL}/threads/${threadId}/state`, {
     method: "GET",
+    headers: getHeaders(),
   });
 
   if (!response.ok) {
